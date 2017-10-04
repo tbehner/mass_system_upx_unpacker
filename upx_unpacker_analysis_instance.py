@@ -1,3 +1,4 @@
+import os
 from os import path
 import mass_api_client
 from mass_api_client import resources as mass
@@ -27,7 +28,7 @@ def upx_unpacker(scheduled_analysis):
             unpacked_file_name = path.join(tmpdir, 'uncompressed_' + path.basename(sample.file_names[0]))
             envoy.run('upx -o {} -d {}'.format(unpacked_file_name, sample_file.name))
             logger.info('Submitting to MASS: {}'.format(unpacked_file_name))
-            mass.FileSample.create(unpacked_file_name, open(unpacked_file_name, 'rb'), tags=['decompressed_upx'])
+            mass.create_with_file(unpacked_file_name, open(unpacked_file_name, 'rb'), tags=['decompressed_upx'])
         logger.info('Sending report for {}'.format(str(scheduled_analysis)))
         scheduled_analysis.create_report(additional_metadata={'result': 'uncompressed'})
         
