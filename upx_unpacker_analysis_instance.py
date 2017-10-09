@@ -25,10 +25,13 @@ def upx_unpacker(scheduled_analysis):
     sample = scheduled_analysis.get_sample()
     with sample.temporary_file() as sample_file:
         with tempfile.TemporaryDirectory() as tmpdir:
-            unpacked_file_name = path.join(tmpdir, 'uncompressed_' + path.basename(sample.unique_features['file']['file_names'][0]))
+            src_filename = sample.unique_features['file']['file_names'][0]
+            unpacked_file_name = path.join(tmpdir, 'uncompressed_' + path.basename(src_filename))
+            logger.info('Going to unpack {} to {}'.format(src_filename, unpacked_file_name))
             ret = envoy.run('upx -o {} -d {}'.format(unpacked_file_name, sample_file.name))
-            if ret != 0:
+            if ret.status_code != 0:
                 logger.info('Could not unpack with UPX')
+                logger.info('Error: {}'.format(ret.std_err))
                 scheduled_analysis.create_report(additional_metadata={'result': 'Could not uncompress with UPX'})
                 return
             logger.info('Submitting to MASS: {}'.format(unpacked_file_name))
